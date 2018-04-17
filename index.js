@@ -6,11 +6,11 @@ var stripe = require('stripe')('sk_test_4P2z743HC1t3mxWcoXPD8bZv')
 var db = require('mysql')
 
 var connection = db.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : '',
-  database : 'database'
-});
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'database'
+})
 
 // var loki = require('lokijs')
 // var 
@@ -57,18 +57,18 @@ app.post('/users/login', (req, res, next) => {
     res.json({err: 'no password'})
   }else {
     // res.json(db.login(req.body, res))
-  connection.query('select * from users where `email` = ?' , [req.body.email], (err, resault, fields) => {
-    if (err) throw err
-    if (resault.length > 0) {
-      if (resault[0].password == req.body.password) {
-        res.json(resault)
+    connection.query('select * from users where `email` = ?' , [req.body.email], (err, resault, fields) => {
+      if (err) throw err
+      if (resault.length > 0) {
+        if (resault[0].password == req.body.password) {
+          res.json(resault)
+        }else {
+          res.json({err: 'error password'})
+        }
       }else {
-        res.json({err: 'error password'})
+        res.json({err: 'not found this user'})
       }
-    }else {
-      res.json({err: 'not found this user'})
-    }
-  })
+    })
   }
 })
 
@@ -94,7 +94,7 @@ app.post('/users/reg', (req, res, next) => {
     res.json({err: 'err data2'})
   }else {
     console.log(req.body)
-  connection.query('INSERT INTO users (email, password, name, phonenumber, avatar) VALUES (?, ?, ?, ? ,?);',
+    connection.query('INSERT INTO users (email, password, name, phonenumber, avatar) VALUES (?, ?, ?, ? ,?);',
       [
         req.body.data1.email,
         req.body.data1.passwd,
@@ -119,34 +119,50 @@ app.post('/users/reg', (req, res, next) => {
 
 app.post('/order/new', (req, res) => {
   console.log(req.body)
-connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`) VALUES (?, ?, ?, ?, ?);', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class], (err, result, fileds) => {
-  if (err) throw err
-  res.json({id: result.insertId})
-})
+  connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`) VALUES (?, ?, ?, ?, ?);', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class], (err, result, fileds) => {
+    if (err) throw err
+    res.json({id: result.insertId})
+  })
 })
 
 app.post('/order/maps', (req, res) => {
   console.log(req.body)
-connection.query('SELECT * FROM `order` WHERE `id` = ?', [req.body.id], (err, result) => {
-  if (err) throw err
-  res.json({id: result})
+  connection.query('SELECT * FROM `order` WHERE `id` = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
 })
+
+app.post('/order/getrunner', (req, res) => {
+  console.log(req.body)
+  connection.query('SELECT `name`,`phonenumber`,`avatar` FROM `users` WHERE `id` = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
+})
+
+app.post('/order/cancel', (req, res) => {
+  console.log(req.body)
+  connection.query('DELETE FROM `order` WHERE `id` = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result.affectedRows})
+  })
 })
 
 app.post('/order/list', (req, res) => {
   console.log(req.body)
-connection.query('SELECT * FROM `order` WHERE `userid` = ?', [req.body.id], (err, result) => {
-  if (err) throw err
-  res.json({id: result})
-})
+  connection.query('SELECT * FROM `order` WHERE `userid` = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
 })
 
 app.post('/order/ditail', (req, res) => {
   console.log(req.body)
-connection.query('SELECT * FROM `order` WHERE `id` = ?', [req.body.id], (err, result) => {
-  if (err) throw err
-  res.json({id: result})
-})
+  connection.query('SELECT * FROM `order` WHERE `id` = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
 })
 
 app.post('/order/pay', (req, res) => {
@@ -163,4 +179,12 @@ app.post('/order/pay', (req, res) => {
   })
 
   res.json(charge)
+})
+
+app.post('/runner', (req, res) => {
+  console.log(req.body)
+  connection.query('SELECT * FROM `order` WHERE `rid` = ? AND `state` = 0 ', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
 })
