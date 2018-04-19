@@ -119,10 +119,47 @@ app.post('/users/reg', (req, res, next) => {
 
 app.post('/order/new', (req, res) => {
   console.log(req.body)
-  connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`) VALUES (?, ?, ?, ?, ?);', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class], (err, result, fileds) => {
-    if (err) throw err
-    res.json({id: result.insertId})
-  })
+
+  switch (req.body.class) {
+    case 0:
+      let cast = req.body.ex * 15
+      console.log(cast)
+      connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`,`cast`) VALUES (?, ?, ?, ?, ?, ? );', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class, cast ], (err, result, fileds) => {
+        if (err) throw err
+        res.json({id: result.insertId})
+      })
+      break
+    case 1:
+      switch (req.body.to) {
+        case 'SUV':
+          connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`,`cast`) VALUES (?, ?, ?, ?, ?, ? );', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class, 75 ], (err, result, fileds) => {
+            if (err) throw err
+            res.json({id: result.insertId})
+          })
+          break
+        case 'Sedan':
+          connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`,`cast`) VALUES (?, ?, ?, ?, ?, ? );', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class, 65 ], (err, result, fileds) => {
+            if (err) throw err
+            res.json({id: result.insertId})
+          })
+          break
+        default:
+          break
+      }
+      break
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      connection.query('INSERT INTO `order` (`userid`, `from`, `to`, `time`,`class`) VALUES (?, ?, ?, ?, ? );', [req.body.uid, req.body.from, req.body.to, Date.now(), req.body.class], (err, result, fileds) => {
+        if (err) throw err
+        res.json({id: result.insertId})
+      })
+      break
+    default:
+      break
+  }
 })
 
 app.post('/order/maps', (req, res) => {
@@ -183,7 +220,15 @@ app.post('/order/pay', (req, res) => {
 
 app.post('/runner', (req, res) => {
   console.log(req.body)
-  connection.query('SELECT * FROM `order` WHERE `rid` = ? AND `state` = 0 ', [req.body.id], (err, result) => {
+  connection.query('SELECT * FROM `order`,`users` WHERE order.rid = ? AND users.id = ? AND order.state = 0', [req.body.id, req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
+})
+
+app.post('/runner/orderlist', (req, res) => {
+  console.log(req.body)
+  connection.query('SELECT * FROM `order` WHERE `rid` = ?', [req.body.id], (err, result) => {
     if (err) throw err
     res.json({id: result})
   })
