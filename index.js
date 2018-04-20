@@ -226,6 +226,23 @@ app.post('/runner', (req, res) => {
   })
 })
 
+app.post('/runner/new', (req, res) => {
+  console.log(req.body)
+  connection.query('select *, count(distinct order.id) FROM `order`,`users`  WHERE order.rid IS NULL group by order.id', (err, result) => {
+    if (err) throw err
+    console.log(result)
+    res.json({id: result})
+  })
+})
+
+app.post('/runner/get', (req, res) => {
+  connection.query('select * FROM `order` WHERE order.id = ?',[req.body.id], (err, result) => {
+    if (err) throw err
+    console.log(result)
+    res.json({id: result})
+  })
+})
+
 app.post('/runner/orderlist', (req, res) => {
   console.log(req.body)
   connection.query('SELECT * FROM `order` WHERE `rid` = ?', [req.body.id], (err, result) => {
