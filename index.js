@@ -25,7 +25,7 @@ var connection = db.createConnection({
 
 // db.login("a","b")
 
-var server = app.listen(3000, function () {
+var server = app.listen(3009, function () {
   console.log('Node.js is listening to PORT:' + server.address().port)
 })
 
@@ -115,6 +115,14 @@ app.post('/users/reg', (req, res, next) => {
         })
       })
   }
+})
+
+app.post('/users/update', (req, res) => {
+  console.log(req.body)
+  connection.query('SELECT * FROM `users` WHERE `id` = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
 })
 
 app.post('/order/new', (req, res) => {
@@ -220,7 +228,15 @@ app.post('/order/pay', (req, res) => {
 
 app.post('/runner', (req, res) => {
   console.log(req.body)
-  connection.query('SELECT * FROM `order`,`users` WHERE order.rid = ? AND users.id = ? AND order.state = 0', [req.body.id, req.body.id], (err, result) => {
+  connection.query('SELECT * FROM `order`,`users` WHERE order.rid = ? AND users.id =  order.userid AND order.state = 1', [req.body.id], (err, result) => {
+    if (err) throw err
+    res.json({id: result})
+  })
+})
+
+app.post('/runner/ditail', (req, res) => {
+  console.log(req.body)
+  connection.query('SELECT * FROM `order`,`users` WHERE order.id = ?', [req.body.id], (err, result) => {
     if (err) throw err
     res.json({id: result})
   })
@@ -236,11 +252,49 @@ app.post('/runner/new', (req, res) => {
 })
 
 app.post('/runner/get', (req, res) => {
-  connection.query('select * FROM `order` WHERE order.id = ?',[req.body.id], (err, result) => {
+  connection.query('select * FROM `order` WHERE order.id = ?', [req.body.id], (err, result) => {
     if (err) throw err
     console.log(result)
     res.json({id: result})
   })
+})
+
+app.post('/runner/getorder', (req, res) => {
+  connection.query('select * FROM `order` WHERE order.id = ?', [req.body.id], (err, result) => {
+    if (err) throw err
+    console.log(result)
+    if (result[0].rid === null) {
+      // res.json({
+      //   data: result
+      // })
+      connection.query('UPDATE `order` SET state = 1 , `rid`= ? WHERE  `id`=?', [req.body.rid, req.body.id], (err, result) => {
+        res.json({
+          data: result.id
+        })
+      })
+    }else {
+      res.json({
+        data: false
+      })
+    }
+  })
+})
+
+app.post('/runner/complish', (req, res) => {
+  console.log(req.body)
+  if (req.body.cast) {
+    connection.query('UPDATE `order` SET `state`= 2 , `cast` = ? WHERE `id`=?', [req.body.cast, req.body.id], (err, result) => {
+      res.json({
+        data: result.id
+      })
+    })
+  }else {
+    connection.query('UPDATE `order` SET `state`= 2 WHERE `id`=?', [req.body.id], (err, result) => {
+      res.json({
+        data: result.id
+      })
+    })
+  }
 })
 
 app.post('/runner/orderlist', (req, res) => {
